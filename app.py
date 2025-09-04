@@ -1,7 +1,6 @@
 # app.py
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 from joblib import load
 
 # === Load saved models ===
@@ -35,7 +34,7 @@ for col in reg_features:
     elif col == "Extracurricular_Activities":
         user_input_values[col] = st.radio("Extracurricular Activities", [0, 1], format_func=lambda x: "No" if x == 0 else "Yes", horizontal=True)
     elif col in parental_cols:
-        user_input_values[col] = 0
+        user_input_values[col] = 0  # 初始化 one-hot
     else:
         if col in valid_ranges:
             user_input_values[col] = st.slider(col, int(valid_ranges[col][0]), int(valid_ranges[col][1]), int(valid_ranges[col][1])//2)
@@ -62,15 +61,13 @@ if st.button("🔮 Predict Student Performance", use_container_width=True):
     predicted_class = clf_model.predict(input_df_class.values)[0]
     predicted_label = "Pass" if predicted_class == 1 else "Fail"
 
-    # === Display results in cards ===
+    # === Display results ===
     st.markdown("---")
     st.subheader("📊 Prediction Results")
 
     col1, col2 = st.columns(2)
-
     with col1:
         st.metric(label="Predicted Final Exam Score", value=f"{predicted_score:.2f}")
-
     with col2:
         if predicted_label == "Pass":
             st.success("✅ Predicted Outcome: Pass")
@@ -79,15 +76,12 @@ if st.button("🔮 Predict Student Performance", use_container_width=True):
 
     # === Visualization of key inputs ===
     st.markdown("### 📈 Student Profile Visualization")
-
-    fig, ax = plt.subplots(figsize=(6, 3))
     features_to_plot = ["Study_Hours_per_Week", "Attendance_Rate", "Past_Exam_Scores"]
     values = [user_input_values[f] for f in features_to_plot]
 
-    ax.bar(features_to_plot, values, color=["#4caf50", "#2196f3", "#ff9800"])
-    ax.set_ylim(0, 100)
-    ax.set_ylabel("Value")
-    ax.set_title("Key Study Factors")
+    chart_df = pd.DataFrame({
+        "Feature": features_to_plot,
+        "Value": values
+    })
 
-    # Show bar chart in Streamlit
-    st.pyplot(fig)
+    st.bar_chart(chart_df.set_index("Feature"))

@@ -10,7 +10,7 @@ clf_model, clf_features = load("rf_classifier.joblib")
 st.set_page_config(page_title="Student Performance Predictor", layout="centered")
 
 st.title("🎓 Student Performance Predictor")
-st.write("Enter the details below to predict the student's **Final Exam Score** and **Pass/Fail outcome**.")
+st.write("Enter student details to predict **Final Exam Score** and **Pass/Fail outcome**.")
 
 # === Identify parental education columns ===
 parental_cols = [col for col in reg_features if col.startswith("Parental_Education_Level_")]
@@ -34,7 +34,7 @@ for col in reg_features:
     elif col == "Extracurricular_Activities":
         user_input_values[col] = st.radio("Extracurricular Activities", [0, 1], format_func=lambda x: "No" if x == 0 else "Yes", horizontal=True)
     elif col in parental_cols:
-        user_input_values[col] = 0  # 初始化 one-hot
+        user_input_values[col] = 0  # init one-hot
     else:
         if col in valid_ranges:
             user_input_values[col] = st.slider(col, int(valid_ranges[col][0]), int(valid_ranges[col][1]), int(valid_ranges[col][1])//2)
@@ -53,35 +53,24 @@ input_df = pd.DataFrame([user_input_values], columns=reg_features)
 
 # === Prediction ===
 if st.button("🔮 Predict Student Performance", use_container_width=True):
-    # 1. Predict Score
+    # Predict Score
     predicted_score = reg_model.predict(input_df.values)[0]
 
-    # 2. Predict Pass/Fail
+    # Predict Pass/Fail
     input_df_class = input_df[clf_features]
     predicted_class = clf_model.predict(input_df_class.values)[0]
     predicted_label = "Pass" if predicted_class == 1 else "Fail"
 
     # === Display results ===
     st.markdown("---")
-    st.subheader("📊 Prediction Results")
+    st.subheader("🎯 Prediction Results")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric(label="Predicted Final Exam Score", value=f"{predicted_score:.2f}")
-    with col2:
-        if predicted_label == "Pass":
-            st.success("✅ Predicted Outcome: Pass")
-        else:
-            st.error("❌ Predicted Outcome: Fail")
+    # Score progress bar
+    st.metric("Predicted Final Exam Score", f"{predicted_score:.2f}")
+    st.progress(min(int(predicted_score), 100))
 
-    # === Visualization of key inputs ===
-    st.markdown("### 📈 Student Profile Visualization")
-    features_to_plot = ["Study_Hours_per_Week", "Attendance_Rate", "Past_Exam_Scores"]
-    values = [user_input_values[f] for f in features_to_plot]
-
-    chart_df = pd.DataFrame({
-        "Feature": features_to_plot,
-        "Value": values
-    })
-
-    st.bar_chart(chart_df.set_index("Feature"))
+    # Pass/Fail outcome
+    if predicted_label == "Pass":
+        st.success("✅ The student is predicted to **Pass**")
+    else:
+        st.error("❌ The student is predicted to **Fail**")

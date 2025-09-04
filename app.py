@@ -10,7 +10,7 @@ clf_model, clf_features = load("rf_classifier.joblib")
 st.set_page_config(page_title="Student Performance Predictor", layout="centered")
 
 st.title("🎓 Student Performance Predictor")
-st.write("Enter student details to predict **Final Exam Score** and **Pass/Fail outcome**.")
+st.write("Fill in the student details to predict the **Final Exam Score** and **Pass/Fail outcome**.")
 
 # === Identify parental education columns ===
 parental_cols = [col for col in reg_features if col.startswith("Parental_Education_Level_")]
@@ -34,7 +34,7 @@ for col in reg_features:
     elif col == "Extracurricular_Activities":
         user_input_values[col] = st.radio("Extracurricular Activities", [0, 1], format_func=lambda x: "No" if x == 0 else "Yes", horizontal=True)
     elif col in parental_cols:
-        user_input_values[col] = 0  # init one-hot
+        user_input_values[col] = 0  # 初始化 one-hot
     else:
         if col in valid_ranges:
             user_input_values[col] = st.slider(col, int(valid_ranges[col][0]), int(valid_ranges[col][1]), int(valid_ranges[col][1])//2)
@@ -65,11 +65,8 @@ if st.button("🔮 Predict Student Performance", use_container_width=True):
     st.markdown("---")
     st.subheader("🎯 Prediction Results")
 
-    # Score progress bar
     st.metric("Predicted Final Exam Score", f"{predicted_score:.2f}")
-    st.progress(min(int(predicted_score), 100))
 
-    # Pass/Fail outcome
     if predicted_label == "Pass":
         st.success("✅ The student is predicted to **Pass**")
     else:

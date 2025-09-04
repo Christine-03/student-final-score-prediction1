@@ -1,6 +1,7 @@
 # app.py
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 from joblib import load
 
 # === Load saved models ===
@@ -45,33 +46,4 @@ for col in reg_features:
 options = [c.replace("Parental_Education_Level_", "") for c in parental_cols]
 chosen_level = st.selectbox("Parental Education Level", options)
 one_hot_col_name = f"Parental_Education_Level_{chosen_level}"
-if one_hot_col_name in user_input_values:
-    user_input_values[one_hot_col_name] = 1.0
-
-# Convert to DataFrame
-input_df = pd.DataFrame([user_input_values], columns=reg_features)
-
-# === Prediction ===
-if st.button("🔮 Predict Student Performance", use_container_width=True):
-    # 1. Predict Score
-    predicted_score = reg_model.predict(input_df.values)[0]
-
-    # 2. Predict Pass/Fail
-    input_df_class = input_df[clf_features]
-    predicted_class = clf_model.predict(input_df_class.values)[0]
-    predicted_label = "Pass" if predicted_class == 1 else "Fail"
-
-    # === Display results in cards ===
-    st.markdown("---")
-    st.subheader("📊 Prediction Results")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.metric(label="Predicted Final Exam Score", value=f"{predicted_score:.2f}")
-
-    with col2:
-        if predicted_label == "Pass":
-            st.success("✅ Predicted Outcome: Pass")
-        else:
-            st.error("❌ Predicted Outcome: Fail")
+if one_hot_col_na_
